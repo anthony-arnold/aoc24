@@ -1,5 +1,5 @@
 CXX = clang++
-CXX_FLAGS = -O0 -g -Wall -Wfatal-errors -Wpedantic -Wextra -Wshadow -Wconversion -std=c++23 -fconstexpr-steps=268435456
+CXX_FLAGS = -O0 -g -Wall -Wfatal-errors -Wpedantic -Wextra -Wshadow -Wconversion -std=c++23 -fconstexpr-steps=268435456 -fbracket-depth=1024 -fno-exceptions
 
 BINDIR = ./build
 CPP = $(wildcard ./*.cpp)
