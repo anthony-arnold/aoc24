@@ -171,6 +171,7 @@ constexpr size_t part2_v = answers_v.a2;
 
 }
 
+#include <print>
 int main () {
    static_assert(aoc::part1_v == 1289579105366);
    static_assert(aoc::part2_v == 92148721834692);
