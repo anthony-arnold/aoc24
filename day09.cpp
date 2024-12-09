@@ -64,11 +64,6 @@ constexpr size_t defrag() {
    return csum;
 }
 
-constexpr size_t min_size(auto&& r) {
-   return std::ranges::min(r, {}, [](auto p) {
-      return p[0];
-   })[0];
-}
 constexpr size_t max_free(auto&& r) {
    return std::ranges::max(r, {}, [](auto p) {
       return p[3];
@@ -78,15 +73,7 @@ constexpr size_t max_free(auto&& r) {
 constexpr size_t compress() {
    auto blk = blocks_v;
    size_t csum {};
-
-   size_t min_size_ = min_size(blk);
    size_t max_free_ = max_free(blk);
-   std::vector<decltype(blk.begin())> avail {};
-   for(auto it = blk.begin(); it != blk.end()-1; it++) {
-      if ((*it)[3] >= min_size_) {
-         avail.push_back(it);
-      }
-   }
 
    for (auto rit = blk.end() - 1; rit > blk.begin(); --rit) {
       size_t id = static_cast<size_t>(std::distance(blk.begin(), rit));
@@ -94,17 +81,13 @@ constexpr size_t compress() {
 
       size_t bid = loc;
       if (rsize <= max_free_) {
-         for (auto itit = avail.begin(); itit != avail.end() && *itit < rit; ++itit) {
-            auto& [size, _1, off, free] = **itit;
-
+         for (auto it = blk.begin(); it != rit; ++it) {
+            auto& [size, _1, off, free] = *it;
             if (free >= rsize) {
                bool rescan = free == max_free_;
                bid = off;
                free -= rsize;
                off += rsize;
-               if (free < min_size_) {
-                  avail.erase(itit);
-               }
                if (rescan) {
                   max_free_ = max_free(std::ranges::subrange(blk.begin(), rit));
                }
@@ -116,16 +99,6 @@ constexpr size_t compress() {
       size_t summa = (bid+rsize) * (bid+rsize-1) / 2 -
          bid * (bid-1) / 2;
       csum += summa * id;
-
-      if (rsize == min_size_) {
-         size_t ms = min_size(std::ranges::subrange(blk.begin(), rit));
-         if (ms > min_size_) {
-            min_size_ = ms;
-            std::erase_if(avail, [=](auto it) {
-               return (*it)[3] < min_size_;
-            });
-         }
-      }
    }
 
    return csum;
