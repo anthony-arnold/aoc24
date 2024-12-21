@@ -152,7 +152,6 @@ constexpr size_t start_search() {
 
 }
 
-#include <print>
 int main() {
    static_assert(aoc::part1_v == std::array<size_t, aoc::answer_size_v> {7,3,0,5,7,1,4,0,5});
    static_assert(aoc::start_search() == 202972175280682);
