@@ -2,6 +2,7 @@
 #include <ranges>
 #include <algorithm>
 #include <array>
+#include <vector>
 
 namespace aoc {
 
@@ -41,30 +42,65 @@ constexpr auto next(size_t i) {
 }
 
 constexpr auto sequence(size_t i) {
-   std::array<size_t, 2000> seq {};
-   for (size_t j = 0; j < 2000; j++) {
+   std::array<size_t, 2001> seq {i};
+   for (size_t j = 1; j <= 2000; j++) {
       i = next(i);
       seq[j] = i;
    }
    return seq;
 }
 
-template <size_t I>
-constexpr auto sequence_v = sequence(secrets_v[I]);
-
-template <size_t... I>
-constexpr auto sum_2000(std::index_sequence<I...>) {
-   return (sequence_v<I>.back() + ...);
+constexpr auto sequences() {
+   std::array<std::array<size_t, 2001>, num_secrets_v> seqs {};
+   for (auto i = 0; i < num_secrets_v; i++) {
+      seqs[i] = sequence(secrets_v[i]);
+   }
+   return seqs;
 }
+
+constexpr auto sequences_v = sequences();
 
 constexpr auto part1() {
-   return sum_2000(std::make_index_sequence<num_secrets_v> {});
+   return std::ranges::fold_left(
+      sequences_v,
+      size_t {},
+      [](size_t sum, const auto& s) {
+         return sum + s.back();
+      });
+}
+
+constexpr auto hash(size_t i, size_t j) {
+   size_t h {};
+   for (size_t k = 1; k < 5; k++) {
+      auto d = static_cast<int>(sequences_v[i][j+k] % 10) -
+         static_cast<int>(sequences_v[i][j+k-1] % 10);
+      h *= 19;
+      h += d + 9;
+   }
+   return h;
+}
+
+constexpr auto part2() {
+   std::vector<size_t> ch(130321);
+   std::vector<bool> chi;
+
+   for (size_t i = 0; i < num_secrets_v; i++) {
+      chi.assign(130321, false);
+
+      for (size_t j = 0; j < 1997; j++) {
+         size_t h {hash(i, j)};
+         if (!chi[h]) {
+            chi[h] = true;
+            ch[h] += sequences_v[i][j+4] % 10;
+         }
+      }
+   }
+   return std::ranges::max(ch);
 }
 
 }
 
-//#include <print>
 int main() {
-   //std::print("{}", aoc::part1());
    static_assert(aoc::part1() == 13429191512);
+   static_assert(aoc::part2() == 1582);
 }
